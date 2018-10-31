@@ -1,0 +1,35 @@
+#include <stdlib.h>
+
+typedef struct
+{
+	char* name;
+	int matriculation_number;
+	int semester;
+	char* program;
+} student;
+
+
+student* create_student(char* name, int matriculation_number, int semester, char* program)
+{
+	student s; // Erstelle neue Struktur
+	student* new_student = &s; // Pointer verweist auf neu erstellte Struktur
+	new_student->name = name;
+	//new_student.matriculation_number = matriculation_number; // Falscher Zugriff auf Pointer
+	new_student->matriculation_number = matriculation_number;
+	//new_student.semester = semester; // Falscher Zugriff auf Pointer
+	new_student->semester = semester;
+	new_student->program = program;
+	return new_student;
+}
+
+int main()
+{	
+	// Erstelle char-Arrays
+	char name[] = { "Max Mustermann" };
+	char program[] = { "Computer Science" };
+	// Übergebe Pointer auf char-Array anstatt char-Array als Zeichenkette
+	student* sl = create_student(name, 424242, 1, program);
+
+	//free(sl); // Entferne, da Speicherplatz zuvor nicht korrekt allokiert wurde und free() damit nicht korrekt arbeitet
+	//Alternativ kann auch der Speicherplatz für die Struktur vorher allokiert werden
+}
