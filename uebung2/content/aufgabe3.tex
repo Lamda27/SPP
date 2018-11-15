@@ -1,1 +1,7 @@
-\chapter*{Aufgabe 3}
+\chapter{Aufgabe 3: Prozesse vs. Threads}
+
+\textbf{a)} Ein Thread besteht aus einer Thread ID, einem Programmzähler (program counter), einem Registersatz (register set) und einem Stack.\medskip 
+
+\textbf{b)} Die Kommunikation von Prozessen erfolgt über das Betriebssystem oder über das Netzwerk, wenn sich die Prozesse auf unterschiedlichen Rechnern befinden. Threads kommunizieren innerhalb eines Prozesses über gemeinsam genutzte Variablen (shared memory).\medskip 
+
+\textbf{c)} Die Parallelisierung über Threads bietet sich an bei einem kleinem Problem, d.h.~bei denen eine moderate Anzahl Threads ausreichend für die Problemstellung ist, da die Implementierung der Parallelisierung einfacher ist, die Kommunikation erfolgt bequem über gemeinsam genutzte Variablen und das gemeinsame Teilen von Code und Daten ist speichereffizient. Jedoch ist die Parallelisierung mit Threads nicht skalierbar: $N$ Threads benötigen $N$ Cores. Bei beliebig hohem $N$ ist die Hardware nur noch mit sich selbst beschäftigt. Erfordert also das Problem eine hohe Nutzung von Parallelität, sollte auf eine Parallisierung mit Prozessen zurückgegriffen werden, denn diese Art der Parallelisierung ist skalierbar, da Prozesse auf unterschiedlichen Rechnern laufen können.
