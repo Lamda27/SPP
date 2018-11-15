@@ -1,1 +1,15 @@
-\chapter*{Aufgabe 2}
+\chapter{Aufgabe 2: Sequentiell konsistenter Speicher und kohärenter Speicher}
+
+Ein \emph{sequentieller Speicher} zeichnet sich dadurch aus, dass das Ergebnis der Updatekette dasselbe ist, als wären die Operationen sequentiell ausgeführt worden. Alle Prozessoren sehen die Operationen in der gleichen Reihenfolge und die Operationen werden in der Reihenfolge ausgeführt, die das Programm spezifiziert.
+
+Ein \emph{kohärenter Speicher} zeichnet sich dadurch aus, dass Schreibzugriffe von Prozessoren auf dieselbe Speicherstelle serialisiert werden, d.h.~die Schreibzugriffe auf dieselbe Speicherstelle werden von allen Prozessoren in der gleichen Reihenfolge gesehen, sodass am Ende der Updatekette ein eindeutiger Wert steht.\medskip 
+
+\textbf{a)} Diese Reihenfolge ist bei einem sequentiell konsistentem Speicher \textbf{nicht möglich}, da $P_1$ und $P_2$ die Operationen nicht in der gleichen Reihenfolge sehen. Auch ist diese Reihenfolge \textbf{nicht} bei kohärentem Speicher \textbf{möglich}, denn die Schreibzugriffe auf die Speicherstelle $c$ erfolgt bei beiden Prozessoren in einer unterschiedlichen Reihenfolge, sodass $P_1$ am Ende $c=3$ sieht, während $P_2$ den Wert $c=1$ sieht.\medskip 
+
+\textbf{b)} Diese Reihenfolge ist bei einem sequentiell konsistentem Speicher \textbf{nicht möglich}, da $P_1$ und $P_2$ die Operationen nicht in der gleichen Reihenfolge sehen. Hingegen ist diese Reihenfolge bei einem kohärentem Speicher \textbf{möglich}, denn die Schreibzugriffe auf die gleiche Speicherstelle werden von beiden Prozessoren in der gleichen Reihenfolge gesehen. Am Ende sehen beide Prozessoren in allen Speicherstellen dieselben Werte.\medskip 
+
+\textbf{c)} Diese Reihenfolge ist bei einem sequentiell konsistentem Speicher \textbf{nicht möglich}, da $P_1$ und $P_2$ die Operationen nicht in der gleichen Reihenfolge sehen. Hingegen ist diese Reihenfolge bei einem kohärentem Speicher \textbf{möglich}, denn die Schreibzugriffe auf die gleiche Speicherstelle werden von beiden Prozessoren in der gleichen Reihenfolge gesehen. Am Ende sehen beide Prozessoren in allen Speicherstellen dieselben Werte.\medskip 
+
+\textbf{d)} Diese Reihenfolge ist bei einem sequentiell konsistentem Speicher \textbf{nicht möglich}, denn obwohl die Operationen von beiden Prozessoren in der gleichen Reihenfolge gesehen werden, erfolgen die Schreibzugriffe von $P_2$ nicht in der Reihenfolge, die vom Programm spezifiziert wurde: $P_2$ schreibt zuerst in Speicherstelle $c$ eine 1 und danach auf Speicherstelle $a$ eine 1. Hier jedoch sehen beide Prozessoren, dass $P_2$ zuerst in $a$ eine 1 schreibt und danach in $c$ eine 1 schreibt. Diese Reihenfolge ist hingegen bei einem kohärentem Speicher \textbf{möglich}, da die Schreibzugriffe auf die gleichen Speicherstelle in der gleichen Reihenfolge gesehen werden.\medskip 
+
+\textbf{e)} Diese Reihenfolge ist bei einem sequentiell konsistemtem Speicher \textbf{möglich}, da die Reihenfolge der Operationen von beiden Prozessoren gleich gesehen wird und die Schreibzugriffe in der Reihenfolge erfolgen, die vom Programm spezifiziert wurden. Erst recht ist diese Reihenfolge dann auch bei einem kohärentem Speicher \textbf{möglich}, da die Schreibzugriffe auf die gleiche Speicherstelle von beiden Prozessoren in der gleichen Reihenfolge gesehen werden.
