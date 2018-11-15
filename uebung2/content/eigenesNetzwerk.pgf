@@ -1,0 +1,50 @@
+\begin{tikzpicture}
+% Verbindungen
+\draw (0,0) -- (1,-1.5) -- (3,-1.5) -- (4,0) -- (3,1.5) -- (1,1.5) --cycle;
+\draw (1,1.5) -- (1,-1.5);
+\draw (0,0) -- (4,0);
+\draw[very thick,blue] (0,0) -- (3,1.5) -- (3,-1.5) --cycle;
+
+\draw (3,1.5) -- (5,5);
+\draw (3,-1.5) -- (5,-5) -- (9,-5) -- (12,-1.5);
+\draw[very thick,blue] (3,1.5) -- (7,3) -- (12,1.5);
+\draw[very thick,blue] (3,-1.5) -- (7,-3) -- (12,-1.5);
+\draw[very thick,blue] (4,0) -- (7,1) -- (11,0);
+\draw[very thick,blue] (4,0) -- (7,-1) -- (11,0);
+\draw (7,3) -- (7,-3);
+\draw (9,5) -- (12,1.5);
+\draw[very thick,blue] (9,5) -- (5,5);
+
+\draw (11,0) -- (12,-1.5) -- (14,-1.5) -- (15,0) -- (14,1.5) -- (12,1.5) --cycle;
+\draw (14,1.5) -- (14,-1.5);
+\draw (11,0) -- (15,0);
+\draw[very thick,blue] (12,1.5) -- (12,-1.5) -- (15,0) --cycle;
+
+% Schnitt
+\draw[very thick,red] plot [smooth] coordinates {(5.5,-6) (6,-0.5) (7,0) (8,0.5) (8,6)};
+
+% Knoten
+\node[circle,draw=black,fill=blue!30!white] (0) at (0,0) {0};
+\node[circle,draw=black,fill=blue!30!white] (1) at (1,-1.5) {1};
+\node[circle,draw=black,fill=blue!30!white] (2) at (3,-1.5) {2};
+\node[circle,draw=black,fill=blue!30!white] (3) at (4,0) {3};
+\node[circle,draw=black,fill=blue!30!white] (4) at (1,1.5) {4};
+\node[circle,draw=black,fill=blue!30!white] (5) at (3,1.5) {5};
+
+\node[circle,draw=black,fill=blue!30!white] (24) at (7,-1) {24};
+\node[circle,draw=black,fill=blue!30!white] (21) at (7,1) {21};
+\node[circle,draw=black,fill=blue!30!white] (20) at (7,-3) {20};
+\node[circle,draw=black,fill=blue!30!white] (30) at (7,3) {30};
+\node[circle,draw=black,fill=blue!30!white] (22) at (5,-5) {22};
+\node[circle,draw=black,fill=blue!30!white] (32) at (5,5) {32};
+
+\node[circle,draw=black,fill=blue!30!white] (10) at (11,0) {10};
+\node[circle,draw=black,fill=blue!30!white] (11) at (12,-1.5) {11};
+\node[circle,draw=black,fill=blue!30!white] (12) at (14,-1.5) {12};
+\node[circle,draw=black,fill=blue!30!white] (13) at (15,0) {13};
+\node[circle,draw=black,fill=blue!30!white] (14) at (12,1.5) {14};
+\node[circle,draw=black,fill=blue!30!white] (15) at (14,1.5) {15};
+
+\node[circle,draw=black,fill=blue!30!white] (31) at (9,5) {31};
+\node[circle,draw=black,fill=blue!30!white] (23) at (9,-5) {23};
+\end{tikzpicture}
