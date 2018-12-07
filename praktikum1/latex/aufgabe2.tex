@@ -1,1 +1,16 @@
 \chapter{Aufgabe 2: Data Sharing}
+
+\textbf{a)} Variablen im Konstrukt \texttt{omp parallel for}:
+\begin{enumerate}
+ \item \texttt{i}: private, da es sich um die Schleifenindexvariable der parallelisierten Schleife handelt
+ \item \texttt{j}: shared, da sich die Variable außerhalb des Konstrukts befindet und nichts anderes spezifiziert wurde (Default)
+ \item \texttt{g1}: private wegen der private-Klausel 
+ \item \texttt{g2}: shared, da es sich um eine globale Variable handelt und nichts anderes spezifiziert wurde (Default)
+\end{enumerate}
+
+\noindent\textbf{b)} Variablen in der Funktion \texttt{foo}:
+\begin{enumerate}
+ \item \texttt{p}: shared, weil die Variable \texttt{g2} übergeben wird, welche shared ist 
+ \item \texttt{g1}: shared, weil dieses \texttt{g1} sich auf die globale Variable \texttt{g1} bezieht und eine private-Klausel sich nur auf das Konstrukt, aber nicht auf die Region bezieht 
+ \item \texttt{g2}: shared, da es sich um eine globale Variable handelt
+\end{enumerate}
