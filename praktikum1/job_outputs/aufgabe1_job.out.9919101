@@ -1,0 +1,16 @@
+gcc -o dotproduct dotproduct.c -O2 -fopenmp -std=c99 -lm
+
+  Sequential      1000    1.000000e+03     0.0000000000
+  Parallel        1000    1.000000e+03     0.0000000000
+
+  Sequential     10000    1.000000e+04     0.0000000000
+  Parallel       10000    1.000000e+04     0.0000000000
+
+  Sequential    100000    1.000000e+05     0.0000000000
+  Parallel      100000    1.000000e+05     0.0100000000
+
+  Sequential   1000000    1.000000e+06     0.0000000000
+  Parallel     1000000    1.000000e+06     0.0100000000
+
+DOT_PRODUCT
+  Normal end of execution.

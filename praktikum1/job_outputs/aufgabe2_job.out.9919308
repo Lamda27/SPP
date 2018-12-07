@@ -1,0 +1,25 @@
+gcc -o dotproduct dotproduct.c -O2 -fopenmp -std=c99 -lm
+
+  Sequential      1000    1.000000e+03     0.0000016690
+  Parallel        1000    1.000000e+03     0.0004365580
+
+  Sequential     10000    1.000000e+04     0.0000137160
+  Parallel       10000    1.000000e+04     0.0000205680
+
+  Sequential    100000    1.000000e+05     0.0001383330
+  Parallel      100000    1.000000e+05     0.0000734470
+
+  Sequential   1000000    1.000000e+06     0.0013262350
+  Parallel     1000000    1.000000e+06     0.0006011010
+
+DOT_PRODUCT
+  Normal end of execution.
+
+COMPUTATION TIME MEASUREMENT:
+  Sequential:                0.0121569330;  xdoty =   1.000000e+07
+  Parallel (1 Threads):      0.0120733980;   xdoty =   1.000000e+07
+  Parallel (2 Threads):      0.0086913200;   xdoty =   1.000000e+07
+  Parallel (4 Threads):      0.0052090220;   xdoty =   1.000000e+07
+  Parallel (8 Threads):      0.0050150550;   xdoty =   1.000000e+07
+  Parallel (16 Threads):      0.0051945020;   xdoty =   1.000000e+07
+ENDING MEASUREMENTS...

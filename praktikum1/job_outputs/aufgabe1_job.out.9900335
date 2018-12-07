@@ -1,0 +1,6 @@
+make: »hello-openmp« ist bereits aktualisiert.
+The number of maximal threads is 16
+Hello 0
+Hello 2
+Hello 1
+Hello 3
