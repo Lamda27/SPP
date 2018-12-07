@@ -14,3 +14,9 @@ bar(threads,laufzeiten*1000);
 xticklabels({'Seq.','1','2','4','8','16'});
 xlabel('Anzahl paralleler Threads');
 ylabel('Laufzeit (ms)');
+
+% logarithmisch
+figure(2);
+loglog(threads(2:end),laufzeiten(2:end)*1000,'-x');
+xlabel('Anzahl paralleler Threads');
+ylabel('Laufzeit (ms)');

@@ -1,1 +1,22 @@
 \chapter{Aufgabe 3: Skalarprodukt}
+
+\begin{figure}[tbp]
+ \centering 
+ \begin{subfigure}{.49\textwidth}
+  \centering 
+  \includegraphics[width=1\textwidth]{img/aufgabe3_barplot.eps}
+  \caption{Säulendiagramm.}
+  \label{fig:aufgabe3_barplot}
+ \end{subfigure}
+%
+ \begin{subfigure}{.49\textwidth}
+  \centering 
+  \includegraphics[width=1\textwidth]{img/aufgabe3_logplot.eps}
+  \caption{Doppellogarithmische Darstellung.}
+  \label{fig:aufgabe3_logplot}
+ \end{subfigure}
+\caption{Laufzeiten für sequentielle Ausführung und parallele Ausführung mit 1, 2, 4, 8, 16 Threads von dotproduct.}
+\label{fig:aufgabe3}
+\end{figure}
+
+Die Abbildungen~\ref{fig:aufgabe3} zeigen die Laufzeiten der sequentiellen Ausführung und der parallelen Ausführungen mit 1, 2, 4, 8 und 16 Threads. Die sequentielle Ausführung und die ,,parallele Ausführung'' mit einem Thread brauchten im Wesentlichen gleich viel Zeit, was zu erwarten war, da eine parallele Ausführung mit einem Thread das gleiche ist wie eine sequentielle Ausführung. Weiterhin kann man beobachten, dass die Laufzeit mit der Zunahme von Threads bis zur Zahl 8 sinkt und für 16 Threads wieder etwas ansteigt. Aus der doppellogarithmischen Darstellung in Abb.~\ref{fig:aufgabe3_logplot} kann man erahnen, dass die Abnahme der Laufzeit logarithmisch erfolgt.
