@@ -133,19 +133,22 @@ int main ( int argc, char *argv[] )
 //  Set the boundary values, which don't change. 
 //
   mean = 0.0;
-
+#pragma omp parallel for
   for ( i = 1; i < M - 1; i++ )
   {
       w[i][0] = 100.0;
   }
+#pragma omp parallel for
   for ( i = 1; i < M - 1; i++ )
   {
       w[i][N-1] = 100.0;
   }
+#pragma omp parallel for
   for ( j = 0; j < N; j++ )
   {
       w[M-1][j] = 100.0;
   }
+#pragma omp parallel for
   for ( j = 0; j < N; j++ )
   {
       w[0][j] = 0.0;
@@ -169,6 +172,7 @@ int main ( int argc, char *argv[] )
 // 
 //  Initialize the interior solution to the mean value.
 //
+#pragma omp parallel for
   for ( i = 1; i < M - 1; i++ )
   {
       for ( j = 1; j < N - 1; j++ )
@@ -193,6 +197,7 @@ int main ( int argc, char *argv[] )
 //
 //  Save the old solution in U.
 //
+	#pragma omp parallel for
       for ( i = 0; i < M; i++ ) 
       {
           for ( j = 0; j < N; j++ )
