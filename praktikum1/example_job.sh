@@ -8,11 +8,11 @@
 #   - eine Datei in die die Ausgabe von stdout erfolgen soll (nach dem -o Parameter)
 #   - Die Anzahl der Threads die sie benötigen (nach dem -c Parameter)
 #
-#SBATCH -J <Job_Name>
+#SBATCH -J aufgabe2_job
 #SBATCH --mail-type=ALL
 # Bitte achten Sie auf vollständige Pfad-Angaben:
-#SBATCH -e /home/<Nutzername>/<Projekt_Name>/Job_Name.err.%j
-#SBATCH -o /home/<Nutzername>/<Projekt_Name>/Job_Name.out.%j
+#SBATCH -e /home/kurse/kurs00025/aq45zyme/spp_praktikum1/aufgabe2_job.err.%j
+#SBATCH -o /home/kurse/kurs00025/aq45zyme/spp_praktikum1/aufgabe2_job.out.%j
 #SBATCH --exclusive
 #SBATCH --account=kurs00025
 #SBATCH --partition=kurs00025
@@ -27,9 +27,11 @@
 # Anschließend schreiben Sie Ihre eigenen Befehle, wie z.B.
 # Laden sie benötigte Module
 module load gcc
+module load openmpi/gcc
 
 # Wechseln sie in das Verzeichnis in dem ihr Executable liegt
-cd ~/<Projekt_Name>
+cd ~/spp_praktikum1
 
 # Ihr Programmaufruf
-./<Programm>  <Parameter>
+make dotproduct
+./dotproduct
