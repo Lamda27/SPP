@@ -1,1 +1,2 @@
 \chapter{Aufgabe 6: Codeausschnitt}
+Ausschlaggebend ist hier die \texttt{private} clause. Diese veranlasst das Programm dazu für jeden Thread eine private Version der Variable \texttt{a} anzulegen. Anders als bei der \texttt{firstprivate} clause, wird allerdings der enthaltene Wert nicht kopiert. Es handelt sich somit um eine zwar deklarierte, aber nicht initialisierte Variable. Somit ist der Wert von \texttt{a} auch nach der Inkrementierung \texttt{undefined}, der gcc Compiler gibt (null) aus. Allerdings wäre auch ein segmentation fault denkbar.   
