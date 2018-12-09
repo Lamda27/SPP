@@ -3,10 +3,10 @@
 
 // This function partitions array A into two subarrays A_1 and A_2
 // Input:
-//     *l is the index of the first element in array A 
+//     *l is the index of the first element in array A
 //     *r is the index of the last element in array A
 //
-//     A              
+//     A
 //     [  |  |  |  |  ...  |  |  |  |  ]
 //      *l                           *r
 //
@@ -19,46 +19,51 @@
 //                  *r   *l
 void partition ( int* A, int* l, int* r )
 {
-	int p = A[*l]; // choose first element as pivot 
+	int p = A[*r]; // choose last element as pivot
 
 	printf("pivot is ");
 	printf("%d", p);
 	printf("\n");
-	int	i = *l - 1, j = *r + 1; //eventuell kritisch
-	int tmp;
-	do {
-		do i++; while (A[i] < p);
-		do j--; while (A[j] > p);
-		if (i < j) {
-			tmp = A[i];
-			A[i] = A[j];
-			A[j] = tmp;
-			
+
+	int i, tmp;
+	int j = *l-1;
+
+	for(i = *l; i < *r; i++) {
+		if(A[i] < p) {
+			j++;
+			tmp = A[j];
+			A[j] = A[i];
+			A[i] = tmp;
 		}
-	} while (i < j);
-	*l = i + 1;
-	*r = j - 1;
+	}
+	j++;
+	tmp = A[j];
+	A[j] = p;
+	A[*r] = tmp;
+	*r = j-1;
+	*l = j+1;
 }
 
 // Input:
-//     l is the index of the first element in array A 
+//     l is the index of the first element in array A
 //     r is the index of the last element in array A
 //
-//     A              
+//     A
 //     [  |  |  |  |  ...  |  |  |  |  ]
-//      l                            r 
+//      l                            r
 void quicksort( int* A, int l, int r )
 {
 	int first = l, last = r;
+	//quicksort(A,first,last);
 	if (l < r) {
-		partition(A, &l, &r); // sollte Werte für l und r ändern
+		partition(A, &l, &r); // sollte Werte fï¿½r l und r ï¿½ndern
 		printf("l is ");
 		printf("%d", l);
 		printf("\n");
 		printf("r is ");
 		printf("%d", r);
 		printf("\n");
-		//HIER LIEGT PROBLEM NR 2, da sich die Werte für r und l nicht ändern
+		//HIER LIEGT PROBLEM NR 2, da sich die Werte fï¿½r r und l nicht ï¿½ndern
 		quicksort(A, first, r);
 		quicksort(A, l, last);
 	}
@@ -75,7 +80,7 @@ int main(int argc, char** argv)
 	// Read number of elements
 	int nrOfElements = atoi(argv[1]);
     srand( 14811 );
-	
+
     // Allocate array
 	int* elements;
 	elements = (int *)malloc(nrOfElements * sizeof(int));
@@ -87,7 +92,7 @@ int main(int argc, char** argv)
 		printf("%d", elements[i]);
 		printf("\n");
 	}
- 
+
 	// RUN QUICKSORT
 	quicksort(elements, 0, nrOfElements - 1);
 
@@ -105,7 +110,7 @@ int main(int argc, char** argv)
 	// TODO
 
     // Verify sorted order
-	
+
 	//check until second to last element
 	for (int i = 0; i < nrOfElements - 1; i++) {
 		if (elements[i] > elements[i + 1])
