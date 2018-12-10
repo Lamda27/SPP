@@ -22,7 +22,7 @@ int main ( int argc, char *argv[] )
 //    This code solves the steady state heat equation on a rectangular region.
 //
 //    The sequential version of this program needs approximately
-//    18/epsilon iterations to complete. 
+//    18/epsilon iterations to complete.
 //
 //
 //    The physical region, and the boundary conditions, are suggested
@@ -56,7 +56,7 @@ int main ( int argc, char *argv[] )
 //
 //    where "Central" is the index of the grid point, "North" is the index
 //    of its immediate neighbor to the "north", and so on.
-//   
+//
 //    Given an approximate solution of the steady state heat equation, a
 //    "better" solution is given by replacing each interior point by the
 //    average of its 4 neighbors - in other words, by using the condition
@@ -64,7 +64,7 @@ int main ( int argc, char *argv[] )
 //
 //      W[Central]  <=  (1/4) * ( W[North] + W[South] + W[East] + W[West] )
 //
-//    If this process is repeated often enough, the difference between successive 
+//    If this process is repeated often enough, the difference between successive
 //    estimates of the solution will go to zero.
 //
 //    This program carries out such an iteration, using a tolerance specified by
@@ -72,7 +72,7 @@ int main ( int argc, char *argv[] )
 //
 //  Licensing:
 //
-//    This code is distributed under the GNU LGPL license. 
+//    This code is distributed under the GNU LGPL license.
 //
 //  Modified:
 //
@@ -107,7 +107,7 @@ int main ( int argc, char *argv[] )
 # define M 500
 # define N 500
 
-  int thread_number = 2;
+  int thread_number = 1;
 
   double diff;
   double epsilon = 0.001;
@@ -127,13 +127,13 @@ int main ( int argc, char *argv[] )
   cout << "  over a rectangular plate.\n";
   cout << "\n";
   cout << "  Spatial grid of " << M << " by " << N << " points.\n";
-  cout << "  The iteration will be repeated until the change is <= " 
+  cout << "  The iteration will be repeated until the change is <= "
        << epsilon << "\n";
   cout << "  Number of processors available = " << omp_get_num_procs ( ) << "\n";
   cout << "  Max number of threads =              " << omp_get_max_threads ( ) << "\n";
 //  cout << "  Number of thread =  " << omp_get_num_threads()<< "\n";
 //
-//  Set the boundary values, which don't change. 
+//  Set the boundary values, which don't change.
 //
   mean = 0.0;
 #pragma omp parallel for num_threads(thread_number)
@@ -174,7 +174,7 @@ int main ( int argc, char *argv[] )
   mean = mean / ( double ) ( 2 * M + 2 * N - 4 );
   cout << "\n";
   cout << "  MEAN = " << mean << "\n";
-// 
+//
 //  Initialize the interior solution to the mean value.
 //
 #pragma omp parallel for num_threads(thread_number)
@@ -185,7 +185,7 @@ int main ( int argc, char *argv[] )
           w[i][j] = mean;
       }
   }
-// 
+//
 //  iterate until the  new solution W differs from the old solution U
 //  by no more than EPSILON.
 //
@@ -203,7 +203,7 @@ int main ( int argc, char *argv[] )
 //  Save the old solution in U.
 //
 	#pragma omp parallel for num_threads(thread_number)
-      for ( i = 0; i < M; i++ ) 
+      for ( i = 0; i < M; i++ )
       {
           for ( j = 0; j < N; j++ )
           {
@@ -223,9 +223,10 @@ int main ( int argc, char *argv[] )
         }
       }
 
-//  This initialization must be executed by one thread only 
+//  This initialization must be executed by one thread only
       diff = 0.0;
-    
+
+      #pragma omp parallel for num_threads(thread_number)
       for ( i = 1; i < M - 1; i++ )
       {
           for ( j = 1; j < N - 1; j++ )
@@ -236,7 +237,7 @@ int main ( int argc, char *argv[] )
               }
           }
       }
-   
+
     iterations++;
     if ( iterations == iterations_print )
     {
@@ -244,7 +245,7 @@ int main ( int argc, char *argv[] )
            << "  " << diff << "\n";
       iterations_print = 2 * iterations_print;
     }
-  } 
+  }
   wtime = omp_get_wtime ( ) - wtime;
 
   cout << "\n";
@@ -253,7 +254,7 @@ int main ( int argc, char *argv[] )
   cout << "\n";
   cout << "  Error tolerance achieved.\n";
   cout << "  Wallclock time = " << wtime << "\n";
-// 
+//
 //  Terminate.
 //
   cout << "\n";
