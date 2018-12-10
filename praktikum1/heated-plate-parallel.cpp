@@ -159,7 +159,7 @@ int main ( int argc, char *argv[] )
 //
 //  Average the boundary values, to come up with a reasonable
 //  initial value for the interior.
-//
+// Reduction should be alright, since the floating point addition should not cause problems
 #pragma omp parallel for num_threads(thread_number), reduction(+:mean)
   for ( i = 1; i < M - 1; i++ )
   {
