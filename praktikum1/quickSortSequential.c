@@ -99,7 +99,10 @@ int main(int argc, char** argv)
 	//check last element
 	if (elements[nrOfElements - 2] > elements[nrOfElements - 1])
 		sortedCorrectly = 0;
-
+	
+	//free allocated memory
+	free(elements);
+	
 	printf("Sorted correctly? 1 = y, 0 = n: ");
 	printf("%d", sortedCorrectly);
 	printf("\n");
