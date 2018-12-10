@@ -33,7 +33,7 @@ void quicksortTask(int* A, int left, int right) {
 
 		//recursion
 		//no new tasks created for less than 100 elements
-		#pragma omp task final (p - lo + 1 <= 100)
+		#pragma omp task final (p - left + 1 <= 100)
 			quicksortTask(A, left, p);
 		#pragma omp task final (right - p <= 100)
 			quicksortTask(A, p + 1, right);
