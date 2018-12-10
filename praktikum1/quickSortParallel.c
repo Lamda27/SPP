@@ -8,25 +8,35 @@ int partition(int* A, int l, int r)
 	int p = A[l], i = l - 1, j = r + 1;
 	int tmp;
 	do {
-		do i++; while (A[i] < p);
-		do j--; while (A[j] > p);
+		//find element right from pivot which is smaller than pivot
+		do {
+			i++;
+		} while (A[i] < p);
+		//find element left from pivot which is bigger than pivot
+		do {
+			j--;
+		} while (A[j] > p);
+		//swap elements
 		if (i < j) {
 			tmp = A[i];
 			A[i] = A[j];
 			A[j] = tmp;
 		}
 	} while (i < j);
+	//return new pivot position
 	return j;
 }
 
-void quicksortTask(int* A, int lo, int hi) {
-	if (lo < hi) {
-		int p = partition(A, lo, hi);
+void quicksortTask(int* A, int left, int right) {
+	if (left < right) {
+		int p = partition(A, left, right);
+
+		//recursion
+		//no new tasks created for less than 100 elements
 		#pragma omp task final (p - lo + 1 <= 100)
-			quicksortTask(A, lo, p);
-		#pragma omp task final (hi - p <= 100)
-			quicksortTask(A, p + 1, hi);
-		#pragma omp taskwait
+			quicksortTask(A, left, p);
+		#pragma omp task final (right - p <= 100)
+			quicksortTask(A, p + 1, right);
 	}
 }
 
@@ -41,7 +51,6 @@ int main( int argc, char** argv )
         return 1;
     }
 
-    
 	// Read in number of elements
 	int nrOfElements = atoi(argv[1]);
 	srand(14811);
@@ -53,22 +62,20 @@ int main( int argc, char** argv )
 	// Initialize array
 	for (int i = 0; i < nrOfElements; i++) {
 		elements[i] = rand();
-		//printf("%d", elements[i]);
-		//printf("\n");
 	}
 
 	// RUN QUICKSORT
-	clock_t begin = clock(); //start timer
+	//start timer
+	double startTime = omp_get_wtime();
 	#pragma omp parallel
 		#pragma omp single 
 			quicksortTask(elements, 0, nrOfElements - 1);
 
 	// Time the execution
-	clock_t end = clock();
-	double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+	double endTime = omp_get_wtime();
+	double time_spent = endTime - startTime;
 
 	// Verify sorted order
-
 	//check until second to last element
 	for (int i = 0; i < nrOfElements - 1; i++) {
 		if (elements[i] > elements[i + 1])
