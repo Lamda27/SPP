@@ -107,7 +107,7 @@ int main ( int argc, char *argv[] )
 # define M 500
 # define N 500
 
-  int thread_number = 1;
+  int thread_number = atoi(argv[1]);
 
   double diff;
   double epsilon = 0.001;
@@ -130,7 +130,8 @@ int main ( int argc, char *argv[] )
   cout << "  The iteration will be repeated until the change is <= "
        << epsilon << "\n";
   cout << "  Number of processors available = " << omp_get_num_procs ( ) << "\n";
-  cout << "  Max number of threads =              " << omp_get_max_threads ( ) << "\n";
+  cout << "  Max number of threads =          " << omp_get_max_threads ( ) << "\n";
+  cout << "  Used number of threads =         " << thread_number << "\n";
 //  cout << "  Number of thread =  " << omp_get_num_threads()<< "\n";
 //
 //  Set the boundary values, which don't change.
