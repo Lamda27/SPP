@@ -79,13 +79,46 @@ void merge_arr( int* arr1, int len1, int* arr2, int len2, int* arr_out, int* len
     *len_out = idx3;
 }
 
+/**
+* Sorts elements for each process locally
+*/
+void sort_locally(int* elements) {
+	int nrOfElements = sizeof(*elements) / sizeof(int);
+	qsort(elements, nrOfElements, sizeof(int), comp_func);
+}
 
 /**
  * All-gather-merge using hypercube approach.
  */
 void all_gather_merge( int* arr, int len, int** out_arr, int* out_len, 
                        int nprocs, MPI_Comm comm ) {
-    // TODO
+    // compute dimensions based on nprocs and given p = 4^l
+	int dimensions = log(nprocs) / log(4);
+	int rank;
+
+	//sort local input elements
+	sort_locally(arr);
+
+	for (int i = 0; i < dimensions; i++) {
+		// compute mpi_rank based on current rank
+		mpi_rank = pow(2, dimensions) ^ MPI_Comm_rank(comm, &rank);
+
+		MPI_Sendrecv(arr, len, MPI_INT,
+			mpi_rank + pow(4, i), i,
+			*out_arr, *out_len, MPI_INT,
+			mpi_rank, i,
+			comm, &status);
+
+		// create new array
+		int* new_out_arr = (int *)malloc((len * *out_len) * sizeof(int));
+		int new_out_arr_len = sizeof(*new_out_arr)/sizeof(int);
+
+		// merge arrays into new array
+		merge_arr(arr, len, *out_arr, *out_len, new_out_arr, new_out_arr_len);
+		arr = new_out_arr;
+		len = new_out_arr_len;
+
+	}
 }
 
 
@@ -187,6 +220,7 @@ int main( int argc, char** argv ) {
     
     //
     // TODO
+	// Aufgabe 2.5
     //
 
 
