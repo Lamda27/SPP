@@ -33,8 +33,49 @@ int is_arr_sorted( int* arr, int len ) {
 int verify_results( int* arr, int len, int myrank, int nprocs ) {
 
     int is_sorted_global = 0;
+    int is_sorted_local = 1;
+    int len_next;
+    int* arr_next;
 
-    // TODO
+    if (myrank < nprocs - 1) {
+      if (myrank > 0) {
+        MPI_Sendrecv(&len, 1, MPI_INT, myrank-1, 0, &len_next, 1, MPI_INT, myrank+1, 0, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+        arr_next = malloc(len_next * sizeof(int));
+        MPI_Sendrecv(arr, len, MPI_INT, myrank-1, 1, arr_next, len_next, MPI_INT, myrank+1, 1, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+      }
+      else {
+        MPI_Sendrecv(&len, 1, MPI_INT, MPI_PROC_NULL, 0, &len_next, 1, MPI_INT, myrank+1, 0, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+        arr_next = malloc(len_next * sizeof(int));
+        MPI_Sendrecv(arr, len, MPI_INT, MPI_PROC_NULL, 1, arr_next, len_next, MPI_INT, myrank+1, 1, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+      }
+
+      // Check sorting in the own array
+      for(int i = 1; i < len; i++) {
+        if (arr[i] < arr[i-1]) {
+          is_sorted_local = 0;
+          break;
+        }
+      }
+
+      // Check sorting with next array
+      if (is_sorted_local == 1 && len > 0) {
+        for(int i = 0; i < len_next; i++) {
+          if (arr[len-1] > arr_next[i]) {
+            is_sorted_local = 0;
+            break;
+          }
+        }
+      }
+
+    }
+    else {
+      len_next = 0;
+      arr_next = malloc(len_next * sizeof(int));
+      MPI_Sendrecv(&len, 1, MPI_INT, myrank-1, 0, &len_next, 1, MPI_INT, MPI_PROC_NULL, 0, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+      MPI_Sendrecv(&arr, len, MPI_INT, myrank-1, 1, &arr_next, len_next, MPI_INT, MPI_PROC_NULL, 1, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+    }
+
+    MPI_Allreduce(&is_sorted_local, &is_sorted_global, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
 
     return is_sorted_global;
 }
@@ -167,15 +208,33 @@ int main( int argc, char** argv ) {
     MPI_Comm comm_row, comm_col;
     MPI_Comm_split(MPI_COMM_WORLD, my_row, 0, &comm_row);
     MPI_Comm_split(MPI_COMM_WORLD, my_col, 0, &comm_col);
+    //printf("my rank is %d, my row is %d, my col is %d\n",w_myrank,my_row,my_col);
 
     // Task 1.2: Gathering elements from row and column
-    int row_recvcount, col_recvcount;
-    int* row_arr = malloc( MAX_NUM_LOCAL_ELEMS * d * sizeof(int) );
-    int* col_arr = malloc( MAX_NUM_LOCAL_ELEMS * d * sizeof(int) );
-    MPI_Allgather(elem_arr, n, MPI_INT, row_arr, row_recvcount, MPI_INT, comm_row);
-    MPI_Allgather(elem_arr, n, MPI_INT, col_arr, col_recvcount, MPI_INT, comm_col);
-    int row_n = n + row_recvcount;
-    int col_n = n + col_recvcount;
+    int* row_recvcounts = malloc ( d * sizeof(int) );
+    int* col_recvcounts = malloc ( d * sizeof(int) );
+
+    //printf("My rank is %d, my n is %d\n",w_myrank,n);
+
+    MPI_Allgather(&n, 1, MPI_INT, row_recvcounts, 1, MPI_INT, comm_row);
+    MPI_Allgather(&n, 1, MPI_INT, col_recvcounts, 1, MPI_INT, comm_col);
+
+    int* displs_row = malloc(d * sizeof(int) );
+    int* displs_col = malloc(d * sizeof(int) );
+    int row_n = 0; // number of hold row elements
+    int col_n = 0; // number of hold column elements
+    for(int i = 0; i < d; i++) {
+      displs_row[i] = row_n;
+      displs_col[i] = col_n;
+      row_n += row_recvcounts[i];
+      col_n += col_recvcounts[i];
+    }
+
+    int* row_arr = malloc( row_n * sizeof(int) );
+    int* col_arr = malloc( col_n * sizeof(int) );
+
+    MPI_Allgatherv(elem_arr, n, MPI_INT, row_arr, row_recvcounts, displs_row, MPI_INT, comm_row);
+    MPI_Allgatherv(elem_arr, n, MPI_INT, col_arr, col_recvcounts, displs_col, MPI_INT, comm_col);
 
     // Task 1.3: Sorting elements
     qsort(row_arr, row_n, sizeof(int), comp_func);
@@ -188,6 +247,7 @@ int main( int argc, char** argv ) {
       col_elem = col_arr[i];
       // loop through row elements, until there is encountered a row element
       // bigger than the column element
+      local_ranks[i] = row_n;
       for(int j = 0; j < row_n; j++) {
         if (row_arr[j] >= col_elem) {
           local_ranks[i] = j;
@@ -203,22 +263,28 @@ int main( int argc, char** argv ) {
     // Task 1.6: Redistribute data
     // Adjust this code to your needs
     //
-    MPI_Request req_arr[col_n];
-    MPI_Status stat_arr[d];
+    MPI_Request req_arr[col_n+1];
+    MPI_Status stat_arr[col_n+1];
     int n_req = 0;
 
-    for(int i = 0; i < col_n; i++) {
-      MPI_Isend( &(elem_arr[i]), 1, MPI_INT, global_ranks[i], 0, MPI_COMM_WORLD, req_arr + n_req );
-      n_req++;
+    if (w_myrank < d) {
+      for(int i = 0; i < col_n; i++) {
+        MPI_Isend( &(col_arr[i]), 1, MPI_INT, global_ranks[i], 2, MPI_COMM_WORLD, req_arr + n_req );
+        n_req++;
+      }
     }
 
     // Receive element
+    MPI_Waitall( n_req, req_arr, stat_arr );
+
     int my_element;
-    for (int i = 0; i < d; i++) {
-      MPI_Recv( &my_element, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, stat_arr + i );
+    int has_element = 0;
+    if (w_myrank < total_n) {
+      MPI_Recv( &my_element, 1, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, 0 );
+      n_req++;
+      has_element = 1;
     }
 
-    MPI_Waitall( n_req, req_arr, stat_arr );
     printf("Rank %d has element %d.\n",w_myrank,my_element);
 
     //
@@ -228,9 +294,10 @@ int main( int argc, char** argv ) {
     double elapsed = get_clock_time() - start;
 
     //
-    // Verify the data is sorted globally
+    // Task 1.7: Verify the data is sorted globally
     //
-    int res = verify_results( elem_arr, n, w_myrank, w_nprocs );
+    //int res = verify_results( elem_arr, n, w_myrank, w_nprocs );
+    int res = verify_results(&my_element, has_element, w_myrank, w_nprocs);
     if( w_myrank == 0 ) {
         if( res ) {
             printf( "Results correct!\n" );
@@ -250,6 +317,5 @@ int main( int argc, char** argv ) {
     }
 
     MPI_Finalize();
-
     return 0;
 }
