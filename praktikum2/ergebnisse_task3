@@ -1,0 +1,6 @@
+metric name: 		exect
+region name: 		reg
+model: 			37.3996+2.17271*(p^1)*log2^1(p)
+no. terms: 		1
+adj. R-squared: 	0.934188
+SMAPE: 			21.0363
