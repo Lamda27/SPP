@@ -28,13 +28,55 @@ int is_arr_sorted( int* arr, int len ) {
 
 
 /**
- * Checks whether arr is sorted globally. 
+ * Checks whether arr is sorted globally.
  **/
 int verify_results( int* arr, int len, int myrank, int nprocs ) {
 
     int is_sorted_global = 0;
 
-    // TODO
+    int is_sorted_local = 1;
+    int len_next;
+    int* arr_next;
+
+    if (myrank < nprocs - 1) {
+      if (myrank > 0) {
+        MPI_Sendrecv(&len, 1, MPI_INT, myrank-1, 0, &len_next, 1, MPI_INT, myrank+1, 0, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+        arr_next = malloc(len_next * sizeof(int));
+        MPI_Sendrecv(arr, len, MPI_INT, myrank-1, 1, arr_next, len_next, MPI_INT, myrank+1, 1, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+      }
+      else {
+        MPI_Sendrecv(&len, 1, MPI_INT, MPI_PROC_NULL, 0, &len_next, 1, MPI_INT, myrank+1, 0, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+        arr_next = malloc(len_next * sizeof(int));
+        MPI_Sendrecv(arr, len, MPI_INT, MPI_PROC_NULL, 1, arr_next, len_next, MPI_INT, myrank+1, 1, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+      }
+
+      // Check sorting in the own array
+      for(int i = 1; i < len; i++) {
+        if (arr[i] < arr[i-1]) {
+          is_sorted_local = 0;
+          break;
+        }
+      }
+
+      // Check sorting with next array
+      if (is_sorted_local == 1 && len > 0) {
+        for(int i = 0; i < len_next; i++) {
+          if (arr[len-1] > arr_next[i]) {
+            is_sorted_local = 0;
+            break;
+          }
+        }
+      }
+
+    }
+    else {
+      len_next = 0;
+      arr_next = malloc(len_next * sizeof(int));
+      MPI_Sendrecv(&len, 1, MPI_INT, myrank-1, 0, &len_next, 1, MPI_INT, MPI_PROC_NULL, 0, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+      MPI_Sendrecv(&arr, len, MPI_INT, myrank-1, 1, &arr_next, len_next, MPI_INT, MPI_PROC_NULL, 1, MPI_COMM_WORLD, MPI_STATUSES_IGNORE);
+    }
+
+    MPI_Allreduce(&is_sorted_local, &is_sorted_global, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
 
     return is_sorted_global;
 }
@@ -67,7 +109,7 @@ void merge_arr( int* arr1, int len1, int* arr2, int len2, int* arr_out, int* len
 
     int idx1 = 0, idx2 = 0, idx3 = 0;
     while( idx1 < len1 ) {
-        while( idx2 < len2 && 
+        while( idx2 < len2 &&
                arr2[ idx2 ] < arr1[ idx1 ] ) {
             arr_out[ idx3++ ] = arr2[ idx2++ ];
         }
@@ -90,35 +132,38 @@ void sort_locally(int* elements) {
 /**
  * All-gather-merge using hypercube approach.
  */
-void all_gather_merge( int* arr, int len, int** out_arr, int* out_len, 
+void all_gather_merge( int* arr, int len, int** out_arr, int* out_len,
                        int nprocs, MPI_Comm comm ) {
     // compute dimensions based on nprocs and given p = 4^l
-	int dimensions = log(nprocs) / log(4);
-	int rank;
+	int dimensions = log2(nprocs);
+  int myrank;
+	MPI_Comm_rank(comm, &myrank);
 
-	//sort local input elements
+	//Task 2.1: sort local input elements
 	sort_locally(arr);
 
 	for (int i = 0; i < dimensions; i++) {
-		// compute mpi_rank based on current rank
-		mpi_rank = pow(2, dimensions) ^ MPI_Comm_rank(comm, &rank);
+		// Task 2.2: compute mpi_rank based on current rank
+		int mpi_rank = (int) ( ((int) pow(2, i)) ^ myrank );
+    int len2;
 
-		MPI_Sendrecv(arr, len, MPI_INT,
-			mpi_rank + pow(4, i), i,
-			*out_arr, *out_len, MPI_INT,
-			mpi_rank, i,
-			comm, &status);
+    // Task 2.3: Send and receive elements to and from neighbor, respectively
+    MPI_Sendrecv(&len, 1, MPI_INT, mpi_rank, 1, &len2, 1, MPI_INT, mpi_rank, 1, comm, 0);
+    int* arr2 = malloc (len2 * sizeof(int));
+		MPI_Sendrecv(arr, len, MPI_INT, mpi_rank, 0, arr2, len2, MPI_INT, mpi_rank, 0, comm, 0);
 
 		// create new array
-		int* new_out_arr = (int *)malloc((len * *out_len) * sizeof(int));
-		int new_out_arr_len = sizeof(*new_out_arr)/sizeof(int);
+    int new_len = len + len2;
+		int* new_arr = malloc( new_len * sizeof(int) );
 
-		// merge arrays into new array
-		merge_arr(arr, len, *out_arr, *out_len, new_out_arr, new_out_arr_len);
-		arr = new_out_arr;
-		len = new_out_arr_len;
-
+		// Task 2.4: merge arrays into new array
+		merge_arr(arr, len, arr2, len2, new_arr, &new_len);
+		arr = new_arr;
+		len = new_len;
 	}
+
+  out_arr = &arr;
+  out_len = &len;
 }
 
 
@@ -126,7 +171,7 @@ void all_gather_merge( int* arr, int len, int** out_arr, int* out_len,
  * Initilizes the input. Each process will have a random local array of numbers. The
  * length of this array is anywhere between 0 to MAX_NUM_LOCAL_ELEMS
  */
-void init_input( int w_myrank, int w_nprocs, int* input_arr, 
+void init_input( int w_myrank, int w_nprocs, int* input_arr,
                  int* input_len, int* total_elems ) {
 
     // Initialize random seed
@@ -193,7 +238,7 @@ void init_input( int w_myrank, int w_nprocs, int* input_arr,
     MPI_Scatter( sendcnts, 1, MPI_INT, input_len, 1, MPI_INT, 0, MPI_COMM_WORLD );
 
     // Redistribute the input
-    MPI_Scatterv( global_arr, sendcnts, displs, MPI_INT, input_arr, *input_len, MPI_INT, 
+    MPI_Scatterv( global_arr, sendcnts, displs, MPI_INT, input_arr, *input_len, MPI_INT,
                   0, MPI_COMM_WORLD );
 
     free( global_arr );
@@ -214,20 +259,23 @@ int main( int argc, char** argv ) {
     int n = 0;
     int total_n;
     int elem_arr[MAX_NUM_LOCAL_ELEMS];
-    
+
     init_input( w_myrank, w_nprocs, elem_arr, &n, &total_n );
 
-    
+
     //
     // TODO
 	// Aufgabe 2.5
     //
+    int* out_arr;
+    int out_len;
+    all_gather_merge(elem_arr, n, &out_arr, &out_len, w_nprocs, MPI_COMM_WORLD);
 
 
     //
     // Verify the data is sorted globally
     //
-    int res = verify_results( elem_arr, n, w_myrank, w_nprocs );
+    int res = verify_results( out_arr, out_len, w_myrank, w_nprocs );
     if( w_myrank == 0 ) {
         if( res ) {
             printf( "Results correct!\n" );
@@ -236,7 +284,7 @@ int main( int argc, char** argv ) {
             printf( "Results incorrect!\n" );
         }
     }
- 
+
     MPI_Finalize();
 
     return 0;

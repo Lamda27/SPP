@@ -19,6 +19,12 @@ echo "Start: `date`"
 module load gcc openmpi/gcc
 
 make
+
+echo "Task 1"
 mpirun -n 16 ./task1
+
+echo "Task 2"
+mpirun -n 16 ./task2
+
 
 echo "End: `date`"
