@@ -1,1 +1,21 @@
 \chapter{Aufgabe 1: Wäsche waschen}
+
+\textbf{a)} Da Waschmaschine, Trockner, Bügeleisen nicht gleichzeitig benutzt werden können, also immer nur ein Gerät zu einem Zeitpunkt in Benutzung sein kann, dauert es 15 Std., um alle Wäscheladungen zu beenden: Für jede Wäscheladung wird jeweils 1 Std.~für Waschen, Trocknen, Bügeln benötigt, also insgesamt 3 Std. Danach kann mit dem jeweiligen Gerät erst die nächste Wäscheladung bearbeitet werden. Somit ergeben sich bei 5 Ladungen $5\cdot3\,$Std. $= 15\,$Std.\medskip  
+
+\textbf{b)} Jeder Freund erhält eine Wäscheladung, die er jeweils wäscht, trocknet und bügelt. Es handelt sich hierbei um \emph{data decomposition}. Das Beenden aller 5 Wäscheladungen dauert dann mindestens 3 Std., wenn fünf Personen gleichzeitig je eine Ladung bearbeiten.\medskip 
+
+\textbf{c)} Die Parallelisierung erfolgt nach dem Schema der \emph{task decomposition}: Waschen, Trocknen, Bügeln wird als eine Instruktionsfolge betrachtet, die die Wäsche durchgeht. Immer, wenn ein Gerät frei wird, wird die vom zuvorigen Gerät bearbeitete Wäscheladung vom nächsten Gerät bearbeitet: Die erste Wäscheladung kommt in die Waschmaschine. Ist diese fertig, kommt sie in den Trockner, derweil die zweite Wäscheladung in die Waschmaschine kommt. Nach einer Stunde wird die erste Ladung gebügelt, die zweite Ladung kommt in den Trockner und die dritte Ladung kommt in die Waschmaschine, und so weiter.
+
+Die Vorgehensweise ist in Tab.~\ref{tab:taskdecomposition} illustriert. Hierbei bezeichnet $W_i, i = 1,\dots,5$ die $i$-te Wäscheladung und $t_j$ den Zeitpunkt, zu dem ein Gerät seine Arbeit entweder beginnt oder inaktiv ist. Auf diese Weise sind alle Wäscheladungen nach mindestens 7 Stunden beendet unter der Annahme, dass das Wechseln der Wäscheladung von einem zum anderen Gerät keine Zeit in Anspruch nimmt.
+
+\begin{table}[h]
+ \centering 
+ \caption{Parallisierung der Wäsche nach dem \emph{task decomposition pattern}.}
+ \begin{tabular}{l|c|c|c|c|c|c|c|c|}
+  \textbf{Zeitpunkt} & $t_0$ & $t_1$ & $t_2$ & $t_3$ & $t_4$ & $t_5$ & $t_6$ & $t_7$ \\ 
+  \textbf{Waschmaschine} & $W_1$ & $W_2$ & $W_3$ & $W_4$ & $W_5$ & -- & -- & -- \\ 
+  \textbf{Trockner} & -- & $W_1$ & $W_2$ & $W_3$ & $W_4$ & $W_5$ & -- & -- \\
+  \textbf{Bügeleisen} & -- & -- & $W_1$ & $W_2$ & $W_3$ & $W_4$ & $W_5$ & -- \\
+ \end{tabular}
+ \label{tab:taskdecomposition}
+\end{table}

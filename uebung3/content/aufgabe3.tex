@@ -1,1 +1,37 @@
 \chapter{Aufgabe 3: Speedup}
+
+\textbf{a)} Den Speed-Up $S$ kann man nach \textsc{Amdahl}s Gesetz berechnen nach
+\begin{equation}
+ S = \frac{1}{(1-f_\textrm{enhanced}) + \frac{f_\mathrm{enhanced}}{S_\mathrm{enhanced}}},
+\end{equation}
+wobei $f_\mathrm{enhanced}$ der Bruchteil des Programms ist, der von der Verbesserung profitiert und $S_\mathrm{enhanced}$ der Speed-Up des Bruchteils durch die Verbesserung darstellt.
+
+Im Fall, dass sämtliche Gleitpunktoperationen ($f_\mathrm{enhanced} = 0.6$) um den Faktor $S_\mathrm{enhanced} = 1.5$ beschleunigt werden, erreicht man insgesamt einen Speed-Up von
+\begin{equation}
+ S = \frac{1}{(1-0.6) + \frac{0.6}{1.5}} = 1.25.
+\end{equation}
+Im Fall, dass nur die Quadratwurzelberechnung ($f_\mathrm{enhanced} = 0.15$) um den Faktor $S_\mathrm{enhanced} = 8$ beschleunigt wird, erreicht man insgesamt einen Speed-Up von 
+\begin{equation}
+ S = \frac{1}{(1-0.15) + \frac{0.15}{8}} = 1.511.
+\end{equation}
+Fazit: Die Anwendung würde am meisten von einer Verbesserung der Quadratwurzelberechnung profitieren.\medskip 
+
+\textbf{b)} \textsc{Amdahl}s Gesetz für Parallelisierung lautet
+\begin{equation}
+ S = \frac{1}{f_\mathrm{seq} + \frac{1-f_\mathrm{seq}}{p}}
+ \label{eq:amdahl_parallel}
+\end{equation}
+mit $f_\mathrm{seq}$ als sequentiellen Bruchteil der Anwendung und $p$ als Prozessoranzahl. In diesem Fall ergibt sich mit $f_\mathrm{seq} = 1-0.9 = 0.1$ und $p = 16$ ein Speed-Up von
+\begin{equation}
+ S = \frac{1}{0.1+\frac{1-0.1}{16}} = 6.4.
+\end{equation}
+
+\textbf{c)} Es gilt, \eqref{eq:amdahl_parallel} mit $p = 16$ und $S = 10$ nach der unbekannten Größe $f_\mathrm{seq}$ aufzulösen:
+\begin{align}
+ \frac{1}{f_\mathrm{seq}+\frac{1-\mathrm{seq}}{16}} &= 10, \\ 
+ f_\mathrm{seq} + \frac{1-f_\mathrm{seq}}{16} &= \frac{1}{10}, \\
+ 16 f_\mathrm{seq} + 1 - f_\mathrm{seq} &= \frac{16}{10}, \\
+ 15 f_\mathrm{seq} &= \frac{16}{10} - 1, \\
+ f_\mathrm{seq} &= \frac{\frac{16}{10}-1}{15} \approx 0.04.
+\end{align}
+Somit ergibt sich der Anteil der Anwendung, der parallelisierbar sein muss, zu $1-f_\mathrm{seq} = 1-0.04 = 0.96$. Also muss $96\,\%$ der Ausführungszeit perfekt parallisierbar sein, um mit 16 Prozessoren einen Speed-Up von 10 zu realisieren.
