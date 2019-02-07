@@ -22,8 +22,9 @@ void cuda_grayscale(int width, int height, BYTE *image, BYTE *image_out)
 			int h, w;
 			w = blockIdx.x * blockDim.x + threadIdx.x;
 			h = blockIdx.y * blockDim.y + threadIdx.y;
-
-			int offset_out = h * width;      // 1 color per pixel
+	if((w < width) && (h <  height))
+   	 {
+        	int offset_out = h * width;      // 1 color per pixel
 			int offset     = offset_out * 3; // 3 colors per pixel
 
 			BYTE *pixel = &image[offset + w * 3];
@@ -33,6 +34,8 @@ void cuda_grayscale(int width, int height, BYTE *image, BYTE *image_out)
 			pixel[1] * 0.7152f + // G
 			pixel[2] * 0.2126f;  // R
 			__syncthreads();
+    	}
+
 }
 
 
