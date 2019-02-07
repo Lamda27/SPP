@@ -156,4 +156,7 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 
         // Free GPU variables
 	//TODO: Free device allocated memory (3 pts)
+				cudaFree(d_input);
+				cudaFree(d_image_out[0]);
+				cudaFree(d_image_out[1]);
 }
