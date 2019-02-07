@@ -63,36 +63,44 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 	BYTE *d_input = NULL;
 	BYTE *d_image_out[2] = {0}; //temporary output buffers on gpu device
 	int image_size = input.cols*input.rows;
-	int suggested_blockSize;   // The launch configurator returned block size 
+	int suggested_blockSize;   // The launch configurator returned block size
 	int suggested_minGridSize; // The minimum grid size needed to achieve the maximum occupancy for a full device launch
 
 	// ******* Grayscale kernel launch *************
 
 	//Creating the block size for grayscaling kernel
 	cudaOccupancyMaxPotentialBlockSize( &suggested_minGridSize, &suggested_blockSize, cuda_grayscale);
-        
-        int block_dim_x, block_dim_y;
-        block_dim_x = block_dim_y = (int) sqrt(suggested_blockSize); 
 
-        dim3 gray_block(/* TODO */); // 2 pts
+        int block_dim_x, block_dim_y;
+        block_dim_x = block_dim_y = (int) sqrt(suggested_blockSize);
+
+        dim3 gray_block(block_dim_x, block_dim_y); // 2 pts
 
         //TODO: Calculate grid size to cover the whole image - 2 pts
+				int grid_dim_x, grid_dim_y;
+				grid_dim_x = grid_dim_y = (int) sqrt(suggested_minGridSize);
+				dim3 gray_grid(grid_dim_x, grid_dim_y);
 
         // Allocate the intermediate image buffers for each step
         Image img_out(input.cols, input.rows, 1, "P5");
         for (int i = 0; i < 2; i++)
-        {  
+        {
             //TODO: allocate memory on the device (2 pts)
             //TODO: intialize allocated memory on device to zero (2 pts)
+						cudaMemset(d_image_out[i], 0, image_size);
         }
 
         //copy input image to device
         //TODO: Allocate memory on device for input image (2 pts)
+				cudaMemset(d_input, 0, image_size);
         //TODO: Copy input image into the device memory (2 pts)
+				cudaMemcpy(d_input, &input, image_size, cudaMemcpyHostToDevice);
 
         cudaEventRecord(start, 0); // start timer
         // Convert input image to grayscale
         //TODO: Launch cuda_grayscale() (2 pts)
+				cuda_grayscale<<<gray_grid, gray_block>>>(input.cols, input.rows, d_input, d_image_out[0]);
+
         cudaEventRecord(stop, 0); // stop timer
         cudaEventSynchronize(stop);
 
@@ -100,17 +108,17 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 	cudaEventElapsedTime(&time, start, stop);
 	cout << "GPU Grayscaling time: " << time << " (ms)\n";
 	cout << "Launched blocks of size " << gray_block.x * gray_block.y << endl;
-    
+
         //TODO: transfer image from device to the main memory for saving onto the disk (2 pts)
         savePPM(img_out, "image_gpu_gray.ppm");
-	
+
 
 	// ******* Bilateral filter kernel launch *************
-	
+
 	//Creating the block size for grayscaling kernel
-	cudaOccupancyMaxPotentialBlockSize( &suggested_minGridSize, &suggested_blockSize, cuda_bilateral_filter); 
-        
-        block_dim_x = block_dim_y = (int) sqrt(suggested_blockSize); 
+	cudaOccupancyMaxPotentialBlockSize( &suggested_minGridSize, &suggested_blockSize, cuda_bilateral_filter);
+
+        block_dim_x = block_dim_y = (int) sqrt(suggested_blockSize);
 
         dim3 bilateral_block(/* TODO */); // 2 pts
 
