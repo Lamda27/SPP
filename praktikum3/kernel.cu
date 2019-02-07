@@ -32,21 +32,7 @@ void cuda_grayscale(int width, int height, BYTE *image, BYTE *image_out)
 			image_out[offset_out + w] = pixel[0] * 0.0722f + // B
 			pixel[1] * 0.7152f + // G
 			pixel[2] * 0.2126f;  // R
-
-
-		// 	for (int h = 0; h < height; h++) {
-    //     int offset_out = h * width;      // 1 color per pixel
-    //     int offset     = offset_out * 3; // 3 colors per pixel
-		//
-    //     for (int w = 0; w < width; w++) {
-    //         BYTE *pixel = &image[offset + w * 3];
-		//
-    //         // Convert to grayscale following the "luminance" model
-    //         image_out[offset_out + w] = pixel[0] * 0.0722f + // B
-    //         pixel[1] * 0.7152f + // G
-    //         pixel[2] * 0.2126f;  // R
-    //     }
-    // }
+			__syncthreads();
 }
 
 
@@ -151,18 +137,19 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
         {
             //TODO: allocate memory on the device (2 pts)
             //TODO: intialize allocated memory on device to zero (2 pts)
-						cudaMemset(d_image_out[i], 0, image_size);
+						cudaMemset(d_image_out[i], 0xFF, image_size);
         }
 
         //copy input image to device
         //TODO: Allocate memory on device for input image (2 pts)
-				cudaMemset(d_input, 0, image_size);
+				cudaMemset(d_input, 0xFF, image_size);
         //TODO: Copy input image into the device memory (2 pts)
 				cudaMemcpy(d_input, &input, image_size, cudaMemcpyHostToDevice);
 
         cudaEventRecord(start, 0); // start timer
         // Convert input image to grayscale
         //TODO: Launch cuda_grayscale() (2 pts)
+				cudaDeviceSynchronize();
 				cuda_grayscale<<<gray_grid, gray_block>>>(input.cols, input.rows, d_input, d_image_out[0]);
 
         cudaEventRecord(stop, 0); // stop timer
@@ -214,6 +201,7 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 				savePPM(img_out, "image_gpu_bilateral.ppm");
 
         // ************** Finalization, cleaning up ************
+				printf("Device Error:\t%s\n", cudaGetErrorString(cudaGetLastError()));
 
         // Free GPU variables
 	//TODO: Free device allocated memory (3 pts)
