@@ -136,6 +136,9 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 
         cudaEventRecord(start, 0); // start timer
 	//TODO: Launch cuda_bilateral_filter() (2 pts)
+				cuda_bilateral_filter<<<bilateral_grid, bilateral_block>>>(d_image_out[0], d_image_out[1],
+					input.cols, input.cols, r, sI, sS);
+
         cudaEventRecord(stop, 0); // stop timer
         cudaEventSynchronize(stop);
 
@@ -146,7 +149,8 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 
         // Copy output from device to host
 	//TODO: transfer image from device to the main memory for saving onto the disk (2 pts)
-
+				cudaMemcpy(d_image_out[1], &img_out, image_size, cudaMemcpyDeviceToHost);
+				savePPM(img_out, "image_gpu.ppm");
 
         // ************** Finalization, cleaning up ************
 
