@@ -110,6 +110,8 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 	cout << "Launched blocks of size " << gray_block.x * gray_block.y << endl;
 
         //TODO: transfer image from device to the main memory for saving onto the disk (2 pts)
+				cudaMemcpy(d_image_out[0], &img_out, image_size, cudaMemcpyDeviceToHost);
+
         savePPM(img_out, "image_gpu_gray.ppm");
 
 
