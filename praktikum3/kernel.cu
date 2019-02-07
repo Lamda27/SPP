@@ -19,19 +19,34 @@ using namespace std;
 __global__
 void cuda_grayscale(int width, int height, BYTE *image, BYTE *image_out)
 {
-    	for (int h = 0; h < height; h++) {
-        int offset_out = h * width;      // 1 color per pixel
-        int offset     = offset_out * 3; // 3 colors per pixel
+			int h, w;
+			w = blockIdx.x * blockDim.x + threadIdx.x;
+			h = blockIdx.y * blockDim.y + threadIdx.y;
 
-        for (int w = 0; w < width; w++) {
-            BYTE *pixel = &image[offset + w * 3];
+			int offset_out = h * width;      // 1 color per pixel
+			int offset     = offset_out * 3; // 3 colors per pixel
 
-            // Convert to grayscale following the "luminance" model
-            image_out[offset_out + w] = pixel[0] * 0.0722f + // B
-            pixel[1] * 0.7152f + // G
-            pixel[2] * 0.2126f;  // R
-        }
-    }
+			BYTE *pixel = &image[offset + w * 3];
+
+			// Convert to grayscale following the "luminance" model
+			image_out[offset_out + w] = pixel[0] * 0.0722f + // B
+			pixel[1] * 0.7152f + // G
+			pixel[2] * 0.2126f;  // R
+
+
+		// 	for (int h = 0; h < height; h++) {
+    //     int offset_out = h * width;      // 1 color per pixel
+    //     int offset     = offset_out * 3; // 3 colors per pixel
+		//
+    //     for (int w = 0; w < width; w++) {
+    //         BYTE *pixel = &image[offset + w * 3];
+		//
+    //         // Convert to grayscale following the "luminance" model
+    //         image_out[offset_out + w] = pixel[0] * 0.0722f + // B
+    //         pixel[1] * 0.7152f + // G
+    //         pixel[2] * 0.2126f;  // R
+    //     }
+    // }
 }
 
 
@@ -196,7 +211,7 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
         // Copy output from device to host
 	//TODO: transfer image from device to the main memory for saving onto the disk (2 pts)
 				cudaMemcpy(d_image_out[1], &img_out, image_size, cudaMemcpyDeviceToHost);
-				savePPM(img_out, "image_gpu.ppm");
+				savePPM(img_out, "image_gpu_bilateral.ppm");
 
         // ************** Finalization, cleaning up ************
 
