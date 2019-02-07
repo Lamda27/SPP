@@ -35,7 +35,9 @@ void cuda_updateGaussian(int r, double sd)
 		fGaussian[i] = expf(-(x*x) / (2 * sd*sd));
 	}
 	//TODO: Copy computed fGaussian to the cGaussian on device memory (2 pts)
-	cudaMemcpyToSymbol(cGaussian, /* TODO */);
+	float cGaussian[64];
+	cudaMemset(cGaussian, 0, 64);
+	cudaMemcpyToSymbol(cGaussian, fGaussian, 64 * sizeof(float), 0, cudaMemcpyHostToDevice);
 }
 
 //TODO: implement cuda_gaussian() kernel (3 pts)
@@ -122,9 +124,12 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 
         block_dim_x = block_dim_y = (int) sqrt(suggested_blockSize);
 
-        dim3 bilateral_block(/* TODO */); // 2 pts
+        dim3 bilateral_block(block_dim_x,block_dim_y); // 2 pts
 
         //TODO: Calculate grid size to cover the whole image - 2pts
+				int grid_dim_x, grid_dim_y;
+				grid_dim_x = grid_dim_y = (int) sqrt(suggested_minGridSize);
+				dim3 bilateral_grid(grid_dim_x, grid_dim_y);
 
         // Create gaussain 1d array
         cuda_updateGaussian(r,sS);
