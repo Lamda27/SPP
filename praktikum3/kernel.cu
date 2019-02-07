@@ -22,10 +22,10 @@ void cuda_grayscale(int width, int height, BYTE *image, BYTE *image_out)
     	for (int h = 0; h < height; h++) {
         int offset_out = h * width;      // 1 color per pixel
         int offset     = offset_out * 3; // 3 colors per pixel
-        
+
         for (int w = 0; w < width; w++) {
             BYTE *pixel = &image[offset + w * 3];
-            
+
             // Convert to grayscale following the "luminance" model
             image_out[offset_out + w] = pixel[0] * 0.0722f + // B
             pixel[1] * 0.7152f + // G
@@ -53,6 +53,7 @@ void cuda_updateGaussian(int r, double sd)
 }
 
 //TODO: implement cuda_gaussian() kernel (3 pts)
+__device__
 inline double cuda_gaussian(float x, double sigma){
 	return expf(-(powf(x, 2)) / (2 * powf(sigma, 2)));
 }
@@ -65,7 +66,7 @@ __global__ void cuda_bilateral_filter(BYTE* input, BYTE* output,
 {
 	// 1D Gaussian kernel array values of a fixed size (make sure the number > filter size r
 	float fGaussian[64];
-	
+
 	for(int h = 0; h < height; h++){
 		for(int w = 0; w < width; w++){
 			double iFiltered = 0;
@@ -90,7 +91,7 @@ __global__ void cuda_bilateral_filter(BYTE* input, BYTE* output,
 					// Weight = 1D Gaussian(x_axis) * 1D Gaussian(y_axis) * Gaussian(Range or Intensity difference)
 					double w = (fGaussian[dy + r] * fGaussian[dx + r]) * cuda_gaussian((float)centrePx - (float)currPx, sI);
 					iFiltered += w * currPx;
-					wP += w;				
+					wP += w;
 				}
 			}
 			output[h*width + w] = iFiltered / wP;
@@ -173,7 +174,6 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
         dim3 bilateral_block(block_dim_x,block_dim_y); // 2 pts
 
         //TODO: Calculate grid size to cover the whole image - 2pts
-				int grid_dim_x, grid_dim_y;
 				grid_dim_x = grid_dim_y = (int) sqrt(suggested_minGridSize);
 				dim3 bilateral_grid(grid_dim_x, grid_dim_y);
 
