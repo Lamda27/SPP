@@ -64,7 +64,7 @@ __global__ void cuda_bilateral_filter(BYTE* input, BYTE* output,
 	int r, double sI, double sS)
 {
 	// 1D Gaussian kernel array values of a fixed size (make sure the number > filter size r
-	float fGaussian[2*r];
+	float fGaussian[64];
 	
 	for(int h = 0; h < height; h++){
 		for(int w = 0; w < width; w++){
