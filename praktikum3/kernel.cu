@@ -19,23 +19,14 @@ using namespace std;
 __global__
 void cuda_grayscale(int width, int height, BYTE *image, BYTE *image_out)
 {
-			int h, w;
-			w = blockIdx.x * blockDim.x + threadIdx.x;
-			h = blockIdx.y * blockDim.y + threadIdx.y;
-	if((w < width) && (h <  height))
-   	 {
-        	int offset_out = h * width;      // 1 color per pixel
-			int offset     = offset_out * 3; // 3 colors per pixel
-
-			BYTE *pixel = &image[offset + w * 3];
-
-			// Convert to grayscale following the "luminance" model
-			image_out[offset_out + w] = pixel[0] * 0.0722f + // B
-			pixel[1] * 0.7152f + // G
-			pixel[2] * 0.2126f;  // R
-			__syncthreads();
-    	}
-
+	int thread = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y;
+	if(thread > width*height)
+		return;
+	
+	int pixel_out = thread;
+	int pixel_in = 3*thread;
+	image_out[pixel_out] = image[pixel_in] * 0.0722f + image[pixel_in + 1] * 0.7152f + image[pixel_in + 2] * 0.2126;
+		
 }
 
 
