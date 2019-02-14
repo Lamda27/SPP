@@ -116,13 +116,15 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 	cudaOccupancyMaxPotentialBlockSize( &suggested_minGridSize, &suggested_blockSize, cuda_grayscale);
 
         int block_dim_x, block_dim_y;
-        block_dim_x = block_dim_y = (int) sqrt(suggested_blockSize);
+        block_dim_x = (int) sqrt(suggested_blockSize);
+	block_dim_y = (int) sqrt(suggested_blockSize);
 
         dim3 gray_block(block_dim_x, block_dim_y); // 2 pts
 
         //TODO: Calculate grid size to cover the whole image - 2 pts
 				int grid_dim_x, grid_dim_y;
-				grid_dim_x = grid_dim_y = (int) sqrt(suggested_minGridSize);
+				grid_dim_x = (int) sqrt(suggested_minGridSize);
+				grid_dim_y = (int) sqrt(suggested_minGridSize);
 				dim3 gray_grid(grid_dim_x, grid_dim_y);
 
         // Allocate the intermediate image buffers for each step
