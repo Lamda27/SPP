@@ -118,6 +118,7 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
         int block_dim_x, block_dim_y;
         block_dim_x = (int) sqrt(suggested_blockSize);
 		block_dim_y = (int) sqrt(suggested_blockSize);
+
         dim3 gray_block(block_dim_x, block_dim_y); // 2 pts
 
         //TODO: Calculate grid size to cover the whole image - 2 pts
@@ -132,13 +133,13 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
         {
             //TODO: allocate memory on the device (2 pts)
             //TODO: intialize allocated memory on device to zero (2 pts)
-						cudaMalloc(&d_image_out, image_size * sizeof(BYTE));
-						cudaMemset(d_image_out[i], 0xFF, image_size);
+			cudaMalloc(d_image_out, image_size * sizeof(BYTE));
+			cudaMemset(d_image_out[i], 0xFF, image_size);
         }
 
         //copy input image to device
         //TODO: Allocate memory on device for input image (2 pts)
-				cudaMalloc(&d_input, image_size * sizeof(BYTE));
+				cudaMalloc(d_input, image_size * sizeof(BYTE));
 				cudaMemset(d_input, 0xFF, image_size);
         //TODO: Copy input image into the device memory (2 pts)
 				cudaMemcpy(d_input, &input, image_size, cudaMemcpyHostToDevice);
