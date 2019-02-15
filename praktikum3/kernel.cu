@@ -62,36 +62,39 @@ __global__ void cuda_bilateral_filter(BYTE* input, BYTE* output,
 	// 1D Gaussian kernel array values of a fixed size (make sure the number > filter size r
 	float fGaussian[64];
 
-	for(int h = 0; h < height; h++){
-		for(int w = 0; w < width; w++){
-			double iFiltered = 0;
-			double wP = 0;
-			// Get the centre pixel value
-			unsigned char centrePx = input[h*width+w];
-			// Iterate through filter size from centre pixel
-			for (int dy = -r; dy <= r; dy++) {
-				int neighborY = h+dy;
-				if (neighborY < 0)
-                    neighborY = 0;
-                else if (neighborY >= height)
-                    neighborY = height - 1;
-				for (int dx = -r; dx <= r; dx++) {
-					int neighborX = w+dx;
-					if (neighborX < 0)
-	                    neighborX = 0;
-	                else if (neighborX >= width)
-	                    neighborX = width - 1;
-					// Get the current pixel; value
-					unsigned char currPx = input[neighborY*width+neighborX];
-					// Weight = 1D Gaussian(x_axis) * 1D Gaussian(y_axis) * Gaussian(Range or Intensity difference)
-					double w = (fGaussian[dy + r] * fGaussian[dx + r]) * cuda_gaussian((float)centrePx - (float)currPx, sI);
-					iFiltered += w * currPx;
-					wP += w;
-				}
-			}
-			output[h*width + w] = iFiltered / wP;
+    int w = blockIdx.x * blockDim.x + threadIdx.x;
+	int h = blockIdx.y * blockDim.y + threadIdx.y;
+	
+	if (x >= width || y >= height) {
+		return;
+	}
+	
+	double iFiltered = 0;
+	double wP = 0;
+	// Get the centre pixel value
+	unsigned char centrePx = input[h*width+w];
+	// Iterate through filter size from centre pixel
+	for (int dy = -r; dy <= r; dy++) {
+		int neighborY = h+dy;
+		if (neighborY < 0)
+            neighborY = 0;
+        else if (neighborY >= height)
+            neighborY = height - 1;
+		for (int dx = -r; dx <= r; dx++) {
+			int neighborX = w+dx;
+			if (neighborX < 0)
+	            neighborX = 0;
+	        else if (neighborX >= width)
+	            neighborX = width - 1;
+			// Get the current pixel; value
+			unsigned char currPx = input[neighborY*width+neighborX];
+			// Weight = 1D Gaussian(x_axis) * 1D Gaussian(y_axis) * Gaussian(Range or Intensity difference)
+			double w = (fGaussian[dy + r] * fGaussian[dx + r]) * cuda_gaussian((float)centrePx - (float)currPx, sI);
+			iFiltered += w * currPx;
+			wP += w;
 		}
 	}
+	output[h*width + w] = iFiltered / wP;
 }
 
 
