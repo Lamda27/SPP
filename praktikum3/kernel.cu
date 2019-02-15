@@ -65,7 +65,7 @@ __global__ void cuda_bilateral_filter(BYTE* input, BYTE* output,
     int w = blockIdx.x * blockDim.x + threadIdx.x;
 	int h = blockIdx.y * blockDim.y + threadIdx.y;
 	
-	if (x >= width || y >= height) {
+	if (w >= width || h >= height) {
 		return;
 	}
 	
