@@ -19,13 +19,18 @@ using namespace std;
 __global__
 void cuda_grayscale(int width, int height, BYTE *image, BYTE *image_out)
 {
-	int thread = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y;
-	if(thread > width*height)
+	//int thread = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y;
+
+	int x = blockIdx.x * blockDim.x + threadIdx.x;
+	int y = blockIdx.y * blockDim.y + threadIdx.y;
+	int thread = x + gridDim.x * blockDim.x * y;
+
+	if(thread >= width*height)
 		return;
 
 	int pixel_out = thread;
 	int pixel_in = 3*thread;
-	image_out[pixel_out] = image[pixel_in] * 0.0722f + image[pixel_in + 1] * 0.7152f + image[pixel_in + 2] * 0.2126;
+	image_out[pixel_out] = image[pixel_in] * 0.0722f + image[pixel_in + 1] * 0.7152f + image[pixel_in + 2] * 0.2126f;
 
 }
 
@@ -61,37 +66,37 @@ __global__ void cuda_bilateral_filter(BYTE* input, BYTE* output,
 {
 	// 1D Gaussian kernel array values of a fixed size (make sure the number > filter size r
 	float fGaussian[64];
+	int x = blockIdx.x * blockDim.x + threadIdx.x;
+	int y = blockIdx.y * blockDim.y + threadIdx.y;
+	int thread = x + gridDim.x * blockDim.x * y;
 
-	for(int h = 0; h < height; h++){
-		for(int w = 0; w < width; w++){
-			double iFiltered = 0;
-			double wP = 0;
-			// Get the centre pixel value
-			unsigned char centrePx = input[h*width+w];
-			// Iterate through filter size from centre pixel
-			for (int dy = -r; dy <= r; dy++) {
-				int neighborY = h+dy;
-				if (neighborY < 0)
-                    neighborY = 0;
-                else if (neighborY >= height)
-                    neighborY = height - 1;
-				for (int dx = -r; dx <= r; dx++) {
-					int neighborX = w+dx;
-					if (neighborX < 0)
-	                    neighborX = 0;
-	                else if (neighborX >= width)
-	                    neighborX = width - 1;
-					// Get the current pixel; value
-					unsigned char currPx = input[neighborY*width+neighborX];
-					// Weight = 1D Gaussian(x_axis) * 1D Gaussian(y_axis) * Gaussian(Range or Intensity difference)
-					double w = (fGaussian[dy + r] * fGaussian[dx + r]) * cuda_gaussian((float)centrePx - (float)currPx, sI);
-					iFiltered += w * currPx;
-					wP += w;
-				}
-			}
-			output[h*width + w] = iFiltered / wP;
+	if(thread >= width*height)
+		return;
+
+	double iFiltered = 0;
+	double wP = 0;
+	unsigned char centrePx = input[thread];
+
+	for (int dy = -r; dy <= r; dy++) {
+		int neighborY = y+dy;
+		if (neighborY < 0)
+			neighborY = 0;
+		else if (neighborY >= height)
+			neighborY = height - 1;
+		for (int dx = -r; dx <= r; dx++) {
+			int neighborX = x+dx;
+			if (neighborX < 0)
+				neighborX = 0;
+			else if (neighborX >= width)
+				neighborX = width - 1;
+			int currPx_idx = neighborX + gridDim.x * blockDim.x * neighborY;
+			unsigned char currPx = input[currPx_idx];
+			double w = (fGaussian[dy+r] * fGaussian[dx+r]) * cuda_gaussian(centrePx - currPx, sI);
+			iFiltered += x * currPx;
+			wP += x;
 		}
 	}
+output[thread] = iFiltered / wP;
 }
 
 
@@ -137,16 +142,14 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
             //TODO: intialize allocated memory on device to zero (2 pts)
 							cudaMalloc(&d_image_out[i], image_size * sizeof(BYTE));
 							cudaMemset(d_image_out[i], 0, image_size * sizeof(BYTE));
-							printf("Allocated d_image_out[%i]\n", i);
         }
 
         //copy input image to device
         //TODO: Allocate memory on device for input image (2 pts)
 				cudaMalloc(&d_input, image_size * sizeof(BYTE));
 				cudaMemset(d_input, 0, image_size * sizeof(BYTE));
-				printf("Allocated d_input\n");
         //TODO: Copy input image into the device memory (2 pts)
-				cudaMemcpy(d_input, &input, image_size, cudaMemcpyHostToDevice);
+				cudaMemcpy(d_input, &input, image_size * sizeof(BYTE), cudaMemcpyHostToDevice);
 
         cudaEventRecord(start, 0); // start timer
         // Convert input image to grayscale
@@ -163,7 +166,7 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 				cout << "Launched blocks of size " << gray_block.x * gray_block.y << endl;
 
         //TODO: transfer image from device to the main memory for saving onto the disk (2 pts)
-				cudaMemcpy(d_image_out[0], &img_out, image_size, cudaMemcpyDeviceToHost);
+				cudaMemcpy(d_image_out[0], &img_out, image_size * sizeof(BYTE), cudaMemcpyDeviceToHost);
 
         savePPM(img_out, "image_gpu_gray.ppm");
 
@@ -199,7 +202,7 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 
         // Copy output from device to host
 	//TODO: transfer image from device to the main memory for saving onto the disk (2 pts)
-				cudaMemcpy(d_image_out[1], &img_out, image_size, cudaMemcpyDeviceToHost);
+				cudaMemcpy(d_image_out[1], &img_out, image_size * sizeof(BYTE), cudaMemcpyDeviceToHost);
 				savePPM(img_out, "image_gpu_bilateral.ppm");
 
         // ************** Finalization, cleaning up ************
