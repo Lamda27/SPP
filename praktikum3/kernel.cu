@@ -22,11 +22,11 @@ void cuda_grayscale(int width, int height, BYTE *image, BYTE *image_out)
 	int thread = threadIdx.x + threadIdx.y * blockDim.x + blockIdx.x * blockDim.x * blockDim.y;
 	if(thread > width*height)
 		return;
-	
+
 	int pixel_out = thread;
 	int pixel_in = 3*thread;
 	image_out[pixel_out] = image[pixel_in] * 0.0722f + image[pixel_in + 1] * 0.7152f + image[pixel_in + 2] * 0.2126;
-		
+
 }
 
 
@@ -97,6 +97,7 @@ __global__ void cuda_bilateral_filter(BYTE* input, BYTE* output,
 
 void gpu_pipeline(const Image & input, Image & output, int r, double sI, double sS)
 {
+	printf("Starting gpu_pipeline.\n");
 	// Events to calculate gpu run time
 	cudaEvent_t start, stop;
 	float time;
@@ -111,13 +112,13 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 	int suggested_minGridSize; // The minimum grid size needed to achieve the maximum occupancy for a full device launch
 
 	// ******* Grayscale kernel launch *************
-
+	printf("Launching grayscale kernel.\n");
 	//Creating the block size for grayscaling kernel
 	cudaOccupancyMaxPotentialBlockSize( &suggested_minGridSize, &suggested_blockSize, cuda_grayscale);
 
         int block_dim_x, block_dim_y;
         block_dim_x = (int) sqrt(suggested_blockSize);
-		block_dim_y = (int) sqrt(suggested_blockSize);
+				block_dim_y = (int) sqrt(suggested_blockSize);
 
         dim3 gray_block(block_dim_x, block_dim_y); // 2 pts
 
@@ -129,18 +130,21 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
 
         // Allocate the intermediate image buffers for each step
         Image img_out(input.cols, input.rows, 1, "P5");
+				printf("Test.\n");
         for (int i = 0; i < 2; i++)
         {
             //TODO: allocate memory on the device (2 pts)
             //TODO: intialize allocated memory on device to zero (2 pts)
-			cudaMalloc(d_image_out, image_size * sizeof(BYTE));
-			cudaMemset(d_image_out[i], 0xFF, image_size);
+							cudaMalloc(&d_image_out[i], image_size * sizeof(BYTE));
+							cudaMemset(d_image_out[i], 0, image_size * sizeof(BYTE));
+							printf("Allocated d_image_out[%i]\n", i);
         }
 
         //copy input image to device
         //TODO: Allocate memory on device for input image (2 pts)
-				cudaMalloc(d_input, image_size * sizeof(BYTE));
-				cudaMemset(d_input, 0xFF, image_size);
+				cudaMalloc(&d_input, image_size * sizeof(BYTE));
+				cudaMemset(d_input, 0, image_size * sizeof(BYTE));
+				printf("Allocated d_input\n");
         //TODO: Copy input image into the device memory (2 pts)
 				cudaMemcpy(d_input, &input, image_size, cudaMemcpyHostToDevice);
 
@@ -154,9 +158,9 @@ void gpu_pipeline(const Image & input, Image & output, int r, double sI, double 
         cudaEventSynchronize(stop);
 
         // Calculate and print kernel run time
-	cudaEventElapsedTime(&time, start, stop);
-	cout << "GPU Grayscaling time: " << time << " (ms)\n";
-	cout << "Launched blocks of size " << gray_block.x * gray_block.y << endl;
+				cudaEventElapsedTime(&time, start, stop);
+				cout << "GPU Grayscaling time: " << time << " (ms)\n";
+				cout << "Launched blocks of size " << gray_block.x * gray_block.y << endl;
 
         //TODO: transfer image from device to the main memory for saving onto the disk (2 pts)
 				cudaMemcpy(d_image_out[0], &img_out, image_size, cudaMemcpyDeviceToHost);
